@@ -7,6 +7,8 @@ services:
     build_command: "npm install && npm run build"
     run_command: "npm run preview"
     environment_slug: node-js
+    instance_count: 1
+    instance_size_slug: basic-xxs
     envs:
       - key: NODE_ENV
         value: production
