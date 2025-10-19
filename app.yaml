@@ -7,12 +7,11 @@ services:
     build_command: "npm install && npm run build"
     run_command: "npm run preview"
     environment_slug: node-js
-    http_port: 4173
-    routes:
-      - path: /
     envs:
       - key: NODE_ENV
         value: production
-      - key: VITE_APP_ENV
-        value: production
+      - key: PORT
+        value: 8080
+    routes:
+      - path: /
     output_dir: dist
