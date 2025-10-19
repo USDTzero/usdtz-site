@@ -1,17 +1,131 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>USDT.z — Stable by Design</title>
-<meta name="description" content="USDT.z — stable 1 USD peg with on-chain BNB oracle pricing & direct buy/sell mechanics." />
-<meta property="og:title" content="USDT.z — Stable by Design" />
-<meta property="og:description" content="USDT.z — 1 USD peg, Chainlink pricing, buy with BNB, sell with -10% discount." />
-<meta property="og:image" content="/og-image.png" />
-<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>USDT.z Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.8.1/dist/ethers.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0b1220;
+      color: white;
+      text-align: center;
+      padding: 40px;
+    }
+    h1 { color: #00b894; }
+    .card {
+      background: rgba(255,255,255,0.05);
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 400px;
+      margin: 20px auto;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    }
+    input {
+      width: 90%;
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+      margin-top: 8px;
+    }
+    button {
+      background: #00b894;
+      border: none;
+      color: #0b1220;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover { opacity: 0.9; }
+  </style>
 </head>
-<body class="bg-[#0b1220] text-white">
-<div id="root"></div>
-<script type="module" src="/src/main.tsx"></script>
+<body>
+  <h1>USDT.z Dashboard</h1>
+  <p>Smart Contract: <b>0x784A1fE46fcCF758fCaDD9d6e7F5621871ABC16C</b></p>
+
+  <button id="connectBtn">Connect Wallet</button>
+  <p id="walletAddress"></p>
+
+  <div class="card">
+    <h3>Buy USDT.z</h3>
+    <input type="number" id="bnbAmount" placeholder="BNB amount" />
+    <button id="buyBtn">Buy</button>
+  </div>
+
+  <div class="card">
+    <h3>Sell USDT.z</h3>
+    <input type="number" id="tokenAmount" placeholder="USDT.z amount" />
+    <button id="sellBtn">Sell</button>
+  </div>
+
+  <div class="card">
+    <h3>Your Balance</h3>
+    <p id="balance">0 USDT.z</p>
+    <button id="refreshBtn">Refresh</button>
+  </div>
+
+  <script>
+    const contractAddress = "0x784A1fE46fcCF758fCaDD9d6e7F5621871ABC16C";
+    const contractABI = [
+      "function buy() external payable",
+      "function sell(uint256 tokenAmount) external",
+      "function balanceOf(address) view returns (uint256)",
+      "function approve(address spender, uint256 amount) external returns (bool)",
+      "function decimals() view returns (uint8)"
+    ];
+
+    let provider, signer, contract;
+
+    async function connectWallet() {
+      if (!window.ethereum) return alert("Please install MetaMask!");
+      provider = new ethers.BrowserProvider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
+      signer = await provider.getSigner();
+      contract = new ethers.Contract(contractAddress, contractABI, signer);
+      const addr = await signer.getAddress();
+      document.getElementById("walletAddress").innerText = "Connected: " + addr;
+    }
+
+    async function buy() {
+      const bnb = document.getElementById("bnbAmount").value;
+      if (!bnb) return alert("Enter BNB amount!");
+      const tx = await contract.buy({ value: ethers.parseEther(bnb) });
+      alert("Transaction sent: " + tx.hash);
+      await tx.wait();
+      alert("✅ Purchase complete!");
+    }
+
+    async function sell() {
+      const tokens = document.getElementById("tokenAmount").value;
+      if (!tokens) return alert("Enter token amount!");
+      const decimals = await contract.decimals();
+      const amount = ethers.parseUnits(tokens, decimals);
+      // Approve first
+      const approveTx = await contract.approve(contractAddress, amount);
+      await approveTx.wait();
+      // Sell
+      const sellTx = await contract.sell(amount);
+      alert("Transaction sent: " + sellTx.hash);
+      await sellTx.wait();
+      alert("✅ Sale complete!");
+    }
+
+    async function refreshBalance() {
+      if (!signer) return alert("Connect wallet first!");
+      const addr = await signer.getAddress();
+      const decimals = await contract.decimals();
+      const bal = await contract.balanceOf(addr);
+      const formatted = ethers.formatUnits(bal, decimals);
+      document.getElementById("balance").innerText = formatted + " USDT.z";
+    }
+
+    document.getElementById("connectBtn").onclick = connectWallet;
+    document.getElementById("buyBtn").onclick = buy;
+    document.getElementById("sellBtn").onclick = sell;
+    document.getElementById("refreshBtn").onclick = refreshBalance;
+  </script>
 </body>
 </html>
