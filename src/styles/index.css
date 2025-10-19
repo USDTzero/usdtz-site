@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+html, body, #root { height: 100%; }
+
+
+.card { @apply bg-[#0f172a]/70 backdrop-blur rounded-xl2 shadow-soft border border-white/10; }
+.btn { @apply inline-flex items-center gap-2 px-5 py-3 rounded-xl2 font-semibold transition hover:-translate-y-0.5; }
+.btn-primary { @apply btn bg-accent text-[#0b1220] hover:opacity-90; }
+.btn-outline { @apply btn border border-white/20 hover:border-white/40; }
+.link { @apply text-accent hover:underline; }
