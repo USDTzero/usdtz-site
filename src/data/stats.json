@@ -1,0 +1,5 @@
+[
+{ "label": "Peg Target", "value": "1.00 USD" },
+{ "label": "Oracle", "value": "Chainlink BNB/USD" },
+{ "label": "Discount (Sell)", "value": "-10%" }
+]
